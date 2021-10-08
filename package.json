@@ -1,0 +1,23 @@
+{
+  "name": "reactive-v-dom-platform",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "server": "http-server --port=3002",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erinknowles0501/reactive-v-dom-platform.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/erinknowles0501/reactive-v-dom-platform/issues"
+  },
+  "homepage": "https://github.com/erinknowles0501/reactive-v-dom-platform#readme",
+  "dependencies": {
+    "http-server": "^13.0.2"
+  }
+}
