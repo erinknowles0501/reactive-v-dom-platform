@@ -76,3 +76,21 @@ UPDATE: Use tag functions for text...somehow
 ```
 
 ## Process:
+
+### Conceptualizing
+
+I decided to build this platform to the point that it could be used to build a simple ToDo app, since that's a fairly classic first app. I started by writing a simple Vue ToDo app, so I could see the essential functionality I had to implement: https://codepen.io/erinknowles/pen/oNevBwx
+
+- Props passed down to components with binding
+- $emit (with passing a value along)
+- ^ the two above come together to make v-model
+- v-modelling actual html element, not needed for vue component
+- html attrs
+- v-for (item and index, array only)
+- :key. Will have to think about how to v-for and key.
+- reactive data
+- methods
+- conditionally applying a css style
+- Platform needs to 'mount' somehow.
+
+I also knew I wanted to include useful error reporting for development.

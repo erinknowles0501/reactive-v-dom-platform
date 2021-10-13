@@ -1,23 +1,29 @@
-// will export the platform to be used in the main app.
+import { printDevConsoleMsg } from "./helpers/devConsole.js";
 
 export default class Platform {
-  constructor(definition, options, plugins) {
-    //this.targetElement = definition.element;
+  // constructor(definition, options, plugins) {
+  constructor(mountElementId, component) {
+    // using querySelector so when defining a Platform instance, the DX is that it's obviously a DOM element.
+    const appElement = document.querySelector(mountElementId);
 
-    // init by connecting to index.html's #app and starting render chain
-    const appElement = document.getElementById("app");
-    // appElement.style.color = "red";
-    console.log("sdgs");
+    if ([...String(mountElementId)][0] !== "#") {
+      printDevConsoleMsg(`Mount element must be a DOM id, with the form '#id'`);
+      return;
+    }
+
+    if (!appElement) {
+      printDevConsoleMsg(`Could not find element with id '${mountElementId}'`);
+      return;
+    }
+
+    appElement.style.border = "2px solid red";
+
+    // compile - need to get access to the #app div and go from there.
+    // actually render() might be called here and will propagate down from there.
+    // also needs an element to bind to, and a component to act as top-level.
   }
   // data
   // methods:
-  // parse template:
-  // <MyComponent /> // call MyComponent().render()....? or have mycomponent call render function from constructor?
-  // <MyComponent v-model="data" />
-  // <MyComponent :text="hello!" />
-  // <MyComponent>Slot content??</MyComponent>
-  // compile - need to get access to the #app div and go from there.
-  // actually render() might be called here and will propagate down from there.
-  // also needs an element to bind to, and a component to act as top-level.
+
   // constructor is also where options and plugins are passed.
 }
