@@ -1,12 +1,20 @@
+import Element from "./element.js";
+
 export default class Component {
   constructor(info) {
+    // will need to call seal() or similar at some point.
+
     // setting up with object instead of array - more future-proof
     this.data = info.data;
-    this.generateTemplate(info.template);
+    this.templateRaw = info.template;
+    this.reactive = {};
+    this.propElements = []; // key-value pairs - reactiveVar: [Element()] that use that var.
+
+    this.parseTemplate();
 
     this.generateReactiveData();
 
-    console.log(this);
+    this.reactive.greeting = "false!!";
 
     // parse template:
     // <MyComponent /> // call MyComponent().render()....? or have mycomponent call render function from constructor?
@@ -15,46 +23,36 @@ export default class Component {
     // <MyComponent>Slot content??</MyComponent>
   }
 
-  generateTemplate(template) {
-    // parses {{ }} template and then passes it directly
-    // to a tag function which then is re-run when those vars update.
-
-    const strings = template.split(/{{.*?}}/gim); // my very first homebrew regex...!
-    const vars = template
-      .match(/{{.*?}}/gim)
-      .map((item) => item.replace(/{{|}}/gim, "").trim()); // very second!!
-
-    console.log(strings, vars);
-
-    // How to identify
-  }
-
   runLifecycle() {
     // TODO: Only when determined it's required :)
   }
 
   generateReactiveData() {
-    // .....data is already be a function...
-    // iterate over data property and create a getter+setter method for each.....?
-    // what's a better way to do this?
-
     const vm = this;
 
-    Object.entries(this.data).forEach(function ([key, val]) {
-      const tempVal = JSON.parse(JSON.stringify(val));
+    Object.entries(vm.data).forEach(function ([key, val]) {
+      // there's a better way than forEach
+      // TODO: LOOK AT THIS TOMORROW>
+      const underscoredKey = `_${key}`;
+      vm.reactive[underscoredKey] = val;
+      //vm.reactive[underscoredKey] = Symbol(); // TODO: This is supposed to create real privacy for these keys. Look into.
 
-      vm[key] = {
+      Object.defineProperty(vm.reactive, key, {
         get() {
-          return tempVal;
+          return vm.reactive[underscoredKey];
         },
         set(newVal) {
-          vm[key] = JSON.parse(JSON.stringify(newVal)); // deep clone this...? On the one hand would introduce
+          if (vm.propElements[key]) {
+            vm.propElements[key].updatePropValue(key, newVal);
+          }
+          vm.reactive[underscoredKey] = JSON.parse(JSON.stringify(newVal)); // deep clone this...? On the one hand would introduce
           // JSON-parsing issues like number-strings being converted to numbers. On
-          // the other hand, don't save numbers as strings. I can't remember encountering
-          // any other JSON-parsing issues. TODO: Look up.
+          // the other hand, don't save numbers as strings (and this will avoid some weird reactivity-issues).
+          // I can't remember encountering any other JSON-parsing issues. TODO: Look up.
         },
-      };
-      console.log(vm);
+      });
+
+      console.log("this after reactive generation: ", vm);
     });
   }
 
@@ -69,31 +67,26 @@ export default class Component {
     // Render() can read to create the elements and assign them values and properties. An Element class.
     // ....do we even need an Element class? What does the element need to do? Does each Element parse itself going down the chain..?
     // and give information about where its text needs to be reactive? And then when Element.update([vals]) is called, it'll update
-    // its text value string based on the vals passed to it.
-    // Okay so an Element needs to be created knowing which attributes it has, what style it has,
+    // its text value string based on the vals passed to it. | should be more like val.set() runs valElements[val].foreach(update(val) or ish.
+    // Okay so an Element needs to be created knowing which attributes it has, what style it has, its tag, its text+vars...
     // this.template ...
     // return...
+
+    const element = new Element(this.templateRaw); // should actually be text... unless this template-parsing happens in Element.
+    const vm = this;
+
+    // TODO: See if not using an arrow function lets you use 'this' here
+    element.propNames.forEach((prop) => {
+      vm.propElements[prop] = element;
+    });
+    console.log("this propelements", this.propElements);
   }
 
   render() {
-    // Render chain.
-    // Calls parseTemplate();
-
-    // creates elements one by one (based on parseTemplate...)
-    // gives them styles and attributes
-    // gives them a text value (should any reactive text already be parsed to string? No. Don't want to have to re-call
-    // render chain for each reaction!! So. Reactive text is NOT parsed, render function creates specific setters that just update
-    // the text of the element. Maybe even only update it at certain string positions! No that's crazy
-    //
-
-    this.parseTemplate();
+    // Gets a (nested) list of elements that know their tag, text, props, etc.
+    // Turns them into DOM elements.
   }
 
-  // methods:
-  // run lifecycle hooks in order
-  // has data
-  // parse to vdom..?
-  // have methods
   // @emit
   // generate unique (ish) id
 }
