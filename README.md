@@ -75,9 +75,9 @@ UPDATE: Use tag functions for text...somehow
 }
 ```
 
-## Process:
+## Devlog:
 
-### Conceptualizing
+### #1
 
 I decided to build this platform to the point that it could be used to build a simple ToDo app, since that's a fairly classic first app. I started by writing a simple Vue ToDo app, so I could see the essential functionality I had to implement: https://codepen.io/erinknowles/pen/oNevBwx
 
@@ -94,3 +94,17 @@ I decided to build this platform to the point that it could be used to build a s
 - Platform needs to 'mount' somehow.
 
 I also knew I wanted to include useful error reporting for development.
+
+### #2
+
+Some conceptualizing is having to happen during development as I realize things about the project. Ideally I would have whiteboarded and walked through the whole thing with a colleague or two first. As it was my own whiteboarding missed some stuff.
+
+I am learning Regex by necessity.
+
+Reactivity is working in theory.
+
+Have solidified concept of parse chain and render chain.
+
+### #3
+
+Am becoming more familiar with the JS DOM api. Am seeking out a thorough overview tutorial or similar to familiarize myself with what's possible, in case it's useful later.

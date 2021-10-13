@@ -1,4 +1,4 @@
-import Element from "./element.js";
+import PlatformElement from "./element.js";
 
 export default class Component {
   constructor(info) {
@@ -6,15 +6,13 @@ export default class Component {
 
     // setting up with object instead of array - more future-proof
     this.data = info.data;
-    this.templateRaw = info.template;
+    this.rawTemplate = info.template;
     this.reactive = {};
     this.propElements = []; // key-value pairs - reactiveVar: [Element()] that use that var.
 
     this.parseTemplate();
 
     this.generateReactiveData();
-
-    this.reactive.greeting = "false!!";
 
     // parse template:
     // <MyComponent /> // call MyComponent().render()....? or have mycomponent call render function from constructor?
@@ -69,10 +67,18 @@ export default class Component {
     // and give information about where its text needs to be reactive? And then when Element.update([vals]) is called, it'll update
     // its text value string based on the vals passed to it. | should be more like val.set() runs valElements[val].foreach(update(val) or ish.
     // Okay so an Element needs to be created knowing which attributes it has, what style it has, its tag, its text+vars...
-    // this.template ...
-    // return...
 
-    const element = new Element(this.templateRaw); // should actually be text... unless this template-parsing happens in Element.
+    // parseTemplate() goes through the template that's passed to it and for each node of the 'DOM',
+    // it either creates a new Component (of the type that's been defined) or a new Element,
+    // which is given its part of the raw template.
+    // parseTemplate returns a nested object of Components and Elements that represent the DOM items
+    // that render is going to create/render.
+    // in order for this to work, parseTemplate is going to have to go all the way down through compnoents and elements
+    // returning their parsed version, all the way down and back up to the top component, which will have the full object.
+    // Then render will go back down and back up rendering them.
+
+    // Each element is given its part of the raw template to parse
+    const element = new PlatformElement(this.rawTemplate);
     const vm = this;
 
     // TODO: See if not using an arrow function lets you use 'this' here

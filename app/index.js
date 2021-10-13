@@ -9,17 +9,18 @@ function showMe(objVar, cloneValue = false) {
 
 function deepClone(val) {
   return JSON.parse(JSON.stringify(val));
-} // with the exception of lodash's implementation, this is the easiest and lightest way to deep clone an object.
+} // with the exception of lodash's implementation, this is the easiest, lightest, and foolest-proof way to deep clone an object.
 
+/*
+ *  Here it is!
+ */
 const app = new Platform("#app", Home);
 
-/** various ways to make DX of defining a component...
- *  Could have:
- *  const mainPage = new Component();
- *  mainPage.define({name, components, props, ...});
- *  mainPage.details({data, computed, methods })
- *  mainPage.template(`<h1>Hello!</h1>`)
- *  orr...
- *  new Component(), mainPage.describe( [everything] );
- *
- * */
+const reactivityButton = document.createElement("button");
+reactivityButton.textContent = "Clickme";
+reactivityButton.onclick = function () {
+  Home.reactive.greeting = "Meee";
+};
+
+const appElement = document.getElementById("app");
+appElement.appendChild(reactivityButton);
