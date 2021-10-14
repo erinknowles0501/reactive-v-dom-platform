@@ -21,6 +21,11 @@ export default class Platform {
     // compile - need to get access to the #app div and go from there.
     // actually render() might be called here and will propagate down from there.
     // also needs an element to bind to, and a component to act as top-level.
+
+    console.log("element render in platform", component.element.render());
+
+    // Here we go!!
+    appElement.appendChild(component.element.render());
   }
   // data
   // methods:

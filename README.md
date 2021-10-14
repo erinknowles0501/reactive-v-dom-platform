@@ -108,3 +108,7 @@ Have solidified concept of parse chain and render chain.
 ### #3
 
 Am becoming more familiar with the JS DOM api. Am seeking out a thorough overview tutorial or similar to familiarize myself with what's possible, in case it's useful later.
+
+### #4
+
+Had a hiccup - got through it by realizing I don't have to be tied to anything I've already done. I realized that the PlatformElement structure isn't quite right - there's the PlatformElement that has its dominfo and renders itself, and there's another class (service) that GETS THAT DOMINFO IF IT DOESN'T EXIST. Having them both in the same class meant that the parse/render chains were funkin up, and I realized that instead of re-writing the class so both implementations would work, I should separate the parsing into a service.

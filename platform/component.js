@@ -7,6 +7,8 @@ export default class Component {
     // setting up with object instead of array - more future-proof
     this.data = info.data;
     this.rawTemplate = info.template;
+    this.parseChain = [];
+    this.element = null;
     this.reactive = {};
     this.propElements = []; // key-value pairs - reactiveVar: [Element()] that use that var.
 
@@ -55,42 +57,31 @@ export default class Component {
   }
 
   parseTemplate() {
-    // possible: template itself updates whenever the values passed to it update. This would mean parsing the template anew
-    // each time though. But there's also: pass a tag function, and generate setters that set the reactive data alone, without
-    // re-creating the elements.
-    // The actual rendering happens in render(). Maybe this function creates a.....map...? Of parsed
-    // This generates the virtual DOM, no?
     // Render takes what it's given, creates elements, and assigns them values and properties.
     // This function, then, needs to take a template - either a string, or a tag function - and turn it into something
     // Render() can read to create the elements and assign them values and properties. An Element class.
-    // ....do we even need an Element class? What does the element need to do? Does each Element parse itself going down the chain..?
+    // Does each Element parse itself going down the chain..?
     // and give information about where its text needs to be reactive? And then when Element.update([vals]) is called, it'll update
     // its text value string based on the vals passed to it. | should be more like val.set() runs valElements[val].foreach(update(val) or ish.
     // Okay so an Element needs to be created knowing which attributes it has, what style it has, its tag, its text+vars...
 
-    // parseTemplate() goes through the template that's passed to it and for each node of the 'DOM',
-    // it either creates a new Component (of the type that's been defined) or a new Element,
-    // which is given its part of the raw template.
-    // parseTemplate returns a nested object of Components and Elements that represent the DOM items
-    // that render is going to create/render.
+    // parseTemplate() goes through the raw template that's passed to it and for each node of the 'DOM',
+    // it parses the Element (or the Elements returned from parsing a Component) which is then
+    // given its part of the raw template, which is parsed and returned, etc.
     // in order for this to work, parseTemplate is going to have to go all the way down through compnoents and elements
     // returning their parsed version, all the way down and back up to the top component, which will have the full object.
     // Then render will go back down and back up rendering them.
 
     // Each element is given its part of the raw template to parse
-    const element = new PlatformElement(this.rawTemplate);
-    const vm = this;
+    const topElement = new PlatformElement(this.rawTemplate);
+    this.element = topElement;
+    this.parseChain = topElement.parseTemplate();
 
     // TODO: See if not using an arrow function lets you use 'this' here
-    element.propNames.forEach((prop) => {
-      vm.propElements[prop] = element;
+    const vm = this;
+    topElement.propNames.forEach((prop) => {
+      vm.propElements[prop] = topElement;
     });
-    console.log("this propelements", this.propElements);
-  }
-
-  render() {
-    // Gets a (nested) list of elements that know their tag, text, props, etc.
-    // Turns them into DOM elements.
   }
 
   // @emit
