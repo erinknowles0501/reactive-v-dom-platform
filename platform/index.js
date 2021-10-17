@@ -1,8 +1,10 @@
 import { printDevConsoleMsg } from "./helpers/devConsole.js";
+import TemplateParser from "./services/templateParser.js";
+import PlatformElement from "./element.js";
 
 export default class Platform {
   // constructor(definition, options, plugins) {
-  constructor(mountElementId, component) {
+  constructor(mountElementId, topComponent) {
     // using querySelector so when defining a Platform instance, the DX is that it's obviously a DOM element.
     const appElement = document.querySelector(mountElementId);
 
@@ -22,10 +24,15 @@ export default class Platform {
     // actually render() might be called here and will propagate down from there.
     // also needs an element to bind to, and a component to act as top-level.
 
-    console.log("element render in platform", component.element.render());
+    // parse template from top to bottom here:
+    topComponent.element = new PlatformElement(
+      TemplateParser.parseTemplate(topComponent.rawTemplate)
+    );
+
+    console.log("element render in platform", topComponent.element.render());
 
     // Here we go!!
-    appElement.appendChild(component.element.render());
+    appElement.appendChild(topComponent.element.render());
   }
   // data
   // methods:
