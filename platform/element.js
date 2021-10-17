@@ -8,7 +8,13 @@ export default class PlatformElement {
       attrs: this.attrs,
       children: this.children,
     } = domInfo);
-    this.text = ""; // Move this parsing to templateParser...
+
+    if (!this.children.length && this.rawText) {
+      // TODO: Right now, components render with no children and no text which breaks stuff.
+
+      // this.text = this.parseText(this.rawRext); // Move this parsing to templateParser...
+      this.text = this.rawText; // TODO parse + reactivity
+    }
 
     this.props = {};
     this.propNames = []; // better way to do this? Store in props without value?
@@ -57,14 +63,10 @@ export default class PlatformElement {
     const renderedElement = document.createElement(this.tag);
 
     if (!this.children.length) {
-      renderedElement.innerText = this.text ?? this.rawText; // TODO: deal with this
-      console.log("has no chillens, this is text: ", this.text ?? this.rawText);
+      renderedElement.innerText = this.text; // TODO: deal with this
     } else {
       // If it has children, append their rendering to this one - the render chain.
       this.children.forEach((child) => {
-        console.log("child template in el render", child);
-        child.text = child.rawText ?? child.text;
-
         const platformElement = new PlatformElement(child);
         renderedElement.appendChild(platformElement.render());
       });

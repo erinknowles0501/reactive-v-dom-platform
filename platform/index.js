@@ -29,8 +29,6 @@ export default class Platform {
       TemplateParser.parseTemplate(topComponent.rawTemplate)
     );
 
-    console.log("element render in platform", topComponent.element.render());
-
     // Here we go!!
     appElement.appendChild(topComponent.element.render());
   }

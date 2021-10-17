@@ -27,6 +27,7 @@ export default class TemplateParser {
 
     domInfo.tag = HTMLElement.tagName;
     domInfo.attrs = HTMLElement.attributes; // TODO: maybe map these for easier access
+    domInfo.text = HTMLElement.textContent;
     const innerTemplate = HTMLElement.innerHTML;
 
     // Because I'm cheating for now and wrapping all text in a tag,
@@ -42,8 +43,6 @@ export default class TemplateParser {
 
     if (!!HTMLInnerTemplate.children.length) {
       // TODO: Figure out how Components are handled here..
-      console.log("has chills");
-      console.log(HTMLInnerTemplate.children);
       Array.from(HTMLInnerTemplate.children).forEach((child) => {
         const platformChild = new PlatformElement(
           this.parseTemplate(child.outerHTML)
@@ -51,16 +50,12 @@ export default class TemplateParser {
         children.push(platformChild);
       });
       //domInfo.children = JSON.parse(JSON.stringify(children)); // TODO: Did this for safety and to keep moving, look into if needed.
-    } else {
-      // If it doesn't have children, then it contains just text (maybe with props) and I need to call parseText().
-      console.log("no chillens");
-      domInfo.text = HTMLInnerTemplate.textContent;
     }
     domInfo.children = children;
     // Remove any tags and anything between tags - we want just the text.
     //this.rawText = this.innerTemplate.replace(/<.*?>/gi, "").replace("  ", "");
 
-    console.log("dominfo", domInfo);
+    //console.log("dominfo", domInfo);
     return domInfo;
   }
 }
