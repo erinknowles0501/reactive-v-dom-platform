@@ -1,6 +1,4 @@
 import { printDevConsoleMsg } from "./helpers/devConsole.js";
-import TemplateParser from "./services/templateParser.js";
-import PlatformElement from "./element.js";
 
 export default class Platform {
   // constructor(definition, options, plugins) {
@@ -31,7 +29,7 @@ export default class Platform {
     topComponent.parseTemplate(topComponent.template);
 
     // Here we go!!
-    appElement.appendChild(topComponent.element.render());
+    appElement.appendChild(topComponent.topElement.render());
   }
   // data
   // methods:

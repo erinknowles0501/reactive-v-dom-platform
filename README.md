@@ -1,5 +1,7 @@
 # Quick notes
 
+## First thoughts:
+
 I imagine it's something like, a Vue component is a JS class where each data item is iterated and set as a static with a get() and set()er, and each DOM element-to-be is stored like, idk,
 class DOMElement {
 constructor(props) {
@@ -138,5 +140,9 @@ Making new branch for parse chain approach.
 
 ### #8.5
 
-Hehehe here I am in the branch!
-Bringing back the parse chain has worked so far, need to take it a little further (basic reactivity) to see if it's worth pursing...
+Hehe here I am in the branch!
+Bringing back the parse chain has worked so far, need to take it a little further (basic reactivity) to see if it's worth pursuing...
+So....how tell an element to update when its prop changes. We need a list of elements keyed to the props the component manages. How do we get that. Pass the element to the parser? How do we pass it before parsing..? I guess we could define the element BEFORE and then add all its dom info to it.
+Elements need ids.
+Can't set topelement in a parsechain unless we know it's the top element :) Besides the component needs an array of either the elements or their ids (would maybe prefer the ids, then we can get the rendered version).
+Actually speak of which should elements save their rendered part?

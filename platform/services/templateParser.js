@@ -1,4 +1,10 @@
 /**
+ *
+ *
+ *
+ *
+ * DEPRECATED
+ *
  * TemplateParser service - is passed a template, and instead of starting a parse chain,
  * it's just recursive. Also parses text into tag-function-able strs and vars....will need
  * to figure out how this will work with the element/component. Returns nested array of
