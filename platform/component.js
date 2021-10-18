@@ -2,16 +2,23 @@ import PlatformElement from "./element.js";
 
 export default class Component {
   constructor(info) {
-    // will need to call seal() or similar at some point.
+    // will need to call seal() or similar at some point. TODO
 
     // setting up with object instead of array - more future-proof
+    this.name = info.data; // should match import file
     this.data = info.data;
     this.rawTemplate = info.template;
+
     this.element = null;
-    this.reactive = {};
+    this.reactive = {}; // not into this implementation TODO
     this.propElements = []; // key-value pairs - reactiveVar: [PlatformElement()] that use that var.
 
     this.generateReactiveData();
+
+    // this.element.props = Object.values(this.data).map((item) => {
+    //   return item;
+    // });
+    // console.log("this element props", this.element.props);
 
     // parse template:
     // <MyComponent /> // call MyComponent().render()....? or have mycomponent call render function from constructor?
@@ -46,6 +53,7 @@ export default class Component {
           // JSON-parsing issues like number-strings being converted to numbers. On
           // the other hand, don't save numbers as strings (and this will avoid some weird reactivity-issues).
           // I can't remember encountering any other JSON-parsing issues. TODO: Look up.
+          console.log("reactivated", vm.reactive, key, newVal);
         },
       });
 

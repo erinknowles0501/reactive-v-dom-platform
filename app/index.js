@@ -20,6 +20,7 @@ const reactivityButton = document.createElement("button");
 reactivityButton.textContent = "Clickme";
 reactivityButton.onclick = function () {
   Home.reactive.greeting = "Meee";
+  console.log("Home after button:", Home);
 };
 
 const appElement = document.getElementById("app");

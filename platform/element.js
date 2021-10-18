@@ -3,14 +3,14 @@ export default class PlatformElement {
     this.innerTemplate = "";
 
     ({
-      text: this.rawText,
+      text: this.rawText, // text should always be the correct text - passed to it from component which does the parsing
       tag: this.tag,
       attrs: this.attrs,
       children: this.children,
     } = domInfo);
 
     if (!this.children.length && this.rawText) {
-      // TODO: Right now, components render with no children and no text which breaks stuff.
+      // TODO: Right now, there are some components that have no children and no text which breaks stuff.
 
       // this.text = this.parseText(this.rawRext); // Move this parsing to templateParser...
       this.text = this.rawText; // TODO parse + reactivity
@@ -59,6 +59,7 @@ export default class PlatformElement {
     // Gets a (nested) list of elements that know their tag, text, props, etc.
     // Turns them into DOM elements.
     // TODO: Dev errors all through here, so many things to go wrong
+    // TODO for attrs props events and so forth
 
     const renderedElement = document.createElement(this.tag);
 
@@ -71,6 +72,8 @@ export default class PlatformElement {
         renderedElement.appendChild(platformElement.render());
       });
     }
+
+    console.log("rendered element", renderedElement);
 
     return renderedElement;
   }

@@ -1,6 +1,7 @@
 import Component from "../../platform/component.js"; // make global
 
 const Item = new Component({
+  name: "Item",
   data: { greeting: "HELLO" },
   props: ["text"],
   template: `

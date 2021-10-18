@@ -126,3 +126,12 @@ Have theory on why Vue (and React, originally) only allowed component templates 
 ### #7
 
 Something's not right with the renderer....I'm noticing that console logs are showing up more than they should (not in the parser, just the rendered), ie it looks like elements are being rendered at least twice. On the DOM it ends up only being once, which is good, but I think the problem is something like, if an element has two children, both of those children call render - HMM NO it IS in the parser. Somehow elements are ending up with themselves as their children if they have none already - fixed.
+
+### #8
+
+Feeling like another realization-hiccup is coming, something about how to get components to connect to their elements. Could have parseTemplate, when it encounters a component, create that component and NO. No fine, import that component (need to search through the appropriate folder for the class - maybe export \* from a file in there.) and set that component's element in parse.
+...components need to be defined with a name that matches their import name (and path??)
+No this is not working - components often have nested elements way down that have reactive elements - not every reactive piece of text (for eg) is going to be the direct child of a component.
+What was wrong with the parse chain? It was that the parsing was happening in the element...could I bring it back but the parsing happens in the component (this makes sense) and the next parsing is handed down to the next component...and the component has an array of elements....and the render chain is unaffected, it just goes through the arrays one by one and onto the next without ever knowing its going through components.
+COuld also do this in the current way - set the components element and all its children until the next component to the component's element. And then component can parse all the text in everything beneath it until the next component.
+Making new branch for parse chain approach.

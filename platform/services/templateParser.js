@@ -8,7 +8,8 @@
 import PlatformElement from "../element.js";
 
 export default class TemplateParser {
-  static parseTemplate(template) {
+  static parseTemplate(template, component = null) {
+    console.log("first template", template);
     // Recursive. Is passed a template, generates a PlatformElement from the top-level
     // item, adds that to the parsedElements array, then sends the inner items - the rest of the template -
     // back to this function.
@@ -19,15 +20,19 @@ export default class TemplateParser {
       attrs: null,
       children: [],
       text: "",
+      //  onclick: null,
     };
 
     const parser = new DOMParser();
     const HTMLElement = parser.parseFromString(template, "text/html").body
       .children[0];
 
+    console.log("htmlelement parser", HTMLElement);
+
     domInfo.tag = HTMLElement.tagName;
     domInfo.attrs = HTMLElement.attributes; // TODO: maybe map these for easier access
-    domInfo.text = HTMLElement.textContent;
+
+    //domInfo.onclick = HTMLElement.onclick;
     const innerTemplate = HTMLElement.innerHTML;
 
     // Because I'm cheating for now and wrapping all text in a tag,
@@ -45,7 +50,7 @@ export default class TemplateParser {
       // TODO: Figure out how Components are handled here..
       Array.from(HTMLInnerTemplate.children).forEach((child) => {
         const platformChild = new PlatformElement(
-          this.parseTemplate(child.outerHTML)
+          this.parseTemplate(child.outerHTML /*, component TODO */)
         );
         children.push(platformChild);
       });
@@ -54,7 +59,9 @@ export default class TemplateParser {
     domInfo.children = children;
     // Remove any tags and anything between tags - we want just the text.
     //this.rawText = this.innerTemplate.replace(/<.*?>/gi, "").replace("  ", "");
-
+    component.element = new PlatformElement(domInfo);
+    component.element.text = component.parseText(HTMLElement.textContent); // THIS NEEDS TO BE PARSED -BY THE COMPONENT- HERE. SO.
+    console.log("component", component.element);
     //console.log("dominfo", domInfo);
     return domInfo;
   }
