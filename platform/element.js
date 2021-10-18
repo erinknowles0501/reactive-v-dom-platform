@@ -1,16 +1,15 @@
 export default class PlatformElement {
   constructor(domInfo) {
-    this.rawText = ""; // Need this to grab from component to re-parse.
-
     ({
       text: this.text, // text should always be the correct text - passed to it from component which does the parsing
+      rawText: this.rawText, // Need this to grab from component to re-parse.
       tag: this.tag,
       attrs: this.attrs,
       children: this.children,
       id: this.id,
     } = domInfo);
 
-    this.renderedElement = null;
+    this.renderedElement = null; // Elements created outside the render chain will not have this. TODO. Look into
   }
 
   render() {
@@ -30,10 +29,9 @@ export default class PlatformElement {
     } else {
       console.log("render: has children");
       // If it has children, append their rendering to this one - the render chain.
-      this.children.forEach((childInfo) => {
-        const platformElement = new PlatformElement(childInfo);
-        console.log("render: platformElement", platformElement);
-        renderedElement.appendChild(platformElement.render());
+      this.children.forEach((childPlatformElement) => {
+        //console.log("render: platformElement", childPlatformElement);
+        renderedElement.appendChild(childPlatformElement.render());
       });
     }
 

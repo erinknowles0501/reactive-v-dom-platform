@@ -146,3 +146,22 @@ So....how tell an element to update when its prop changes. We need a list of ele
 Elements need ids.
 Can't set topelement in a parsechain unless we know it's the top element :) Besides the component needs an array of either the elements or their ids (would maybe prefer the ids, then we can get the rendered version).
 Actually speak of which should elements save their rendered part?
+
+### #8.6
+
+Okay do we even need PlatformElements....they don't do anything but render themselves, but that could be easily restructured - topElement calls render on its parseChain...
+The benefit though is a PlatformElement, when it renders itself, saves its DOMElement! Making selecting that element and updating it very easy...
+There's something else - keep the PlatformElements and keep them rendering themselves, but change the parseChain to be THOSE ELEMENTS, not just their domInfo. The benefit is we can just directly platformElement.element.innerText = updatedText, instead of querying the document.
+That said querying the document seems foolproof enough - if we update the elements array with the item itself instead of its id whenever we access it, we're cacheing that effort too.
+
+### #8.7
+
+Update: the children array needs to be the PlatformElements - because those store their rawText.
+We COULD just store the id and its rawText together...would that work for other types of reactivity?
+
+- Whether to have a class
+- Whether to display at all
+- Whether to have an attr
+- How many elements beneath it to render (v-for)....
+
+Altogether sounds like we do need the PlatformElement. Come back to this.
