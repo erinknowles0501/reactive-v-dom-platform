@@ -26,8 +26,9 @@ export default class Platform {
 
     // parse template from top to bottom here:
     //topComponent.element = new PlatformElement(
-    TemplateParser.parseTemplate(topComponent.rawTemplate, topComponent); // this is only ever called from here so we can pass the component as the arg
+    //TemplateParser.parseTemplate(topComponent.rawTemplate); // this is only ever called from here so we can pass the component as the arg
     //);
+    topComponent.parseTemplate(topComponent.template);
 
     // Here we go!!
     appElement.appendChild(topComponent.element.render());

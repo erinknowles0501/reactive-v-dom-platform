@@ -3,49 +3,14 @@ export default class PlatformElement {
     this.innerTemplate = "";
 
     ({
-      text: this.rawText, // text should always be the correct text - passed to it from component which does the parsing
+      text: this.text, // text should always be the correct text - passed to it from component which does the parsing
       tag: this.tag,
       attrs: this.attrs,
       children: this.children,
     } = domInfo);
 
-    if (!this.children.length && this.rawText) {
-      // TODO: Right now, there are some components that have no children and no text which breaks stuff.
-
-      // this.text = this.parseText(this.rawRext); // Move this parsing to templateParser...
-      this.text = this.rawText; // TODO parse + reactivity
-    }
-
     this.props = {};
     this.propNames = []; // better way to do this? Store in props without value?
-  }
-
-  updatePropValue(key, value) {
-    // Only ever called in a forEach so it's only ever one prop
-    this.props[key] = value;
-    this.generateText();
-  }
-
-  parseText() {
-    // parses {{ }} template and then passes it directly
-    // to a (tag, basically) function which then is re-run when those vars update.
-
-    console.log("this rawtext", this.rawText);
-
-    this.strings = this.rawText
-      .replace("\n", "")
-      .replace("  ", "")
-      .split(/{{.*?}}/gi); // my very first homebrew regex...!
-
-    let hasProps = this.rawText.match(/{{.*?}}/gi);
-    if (!!hasProps) {
-      this.propnames = hasProps.map((item) =>
-        item.replace(/{{|}}/gi, "").trim()
-      );
-    }
-
-    // TODO: This part
-    this.text = this.strings.join(" ");
   }
 
   generateText() {

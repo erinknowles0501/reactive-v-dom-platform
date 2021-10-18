@@ -135,3 +135,8 @@ No this is not working - components often have nested elements way down that hav
 What was wrong with the parse chain? It was that the parsing was happening in the element...could I bring it back but the parsing happens in the component (this makes sense) and the next parsing is handed down to the next component...and the component has an array of elements....and the render chain is unaffected, it just goes through the arrays one by one and onto the next without ever knowing its going through components.
 COuld also do this in the current way - set the components element and all its children until the next component to the component's element. And then component can parse all the text in everything beneath it until the next component.
 Making new branch for parse chain approach.
+
+### #8.5
+
+Hehehe here I am in the branch!
+Bringing back the parse chain has worked so far, need to take it a little further (basic reactivity) to see if it's worth pursing...
