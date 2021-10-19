@@ -165,3 +165,48 @@ We COULD just store the id and its rawText together...would that work for other 
 - How many elements beneath it to render (v-for)....
 
 Altogether sounds like we do need the PlatformElement. Come back to this.
+
+### #9
+
+It's been pointed out that the JS DOMParser returns ELEMENTS, and they're just not attached to the document yet.
+This suggests parsing and rendering in the same step, and doing away with the PlatformElement class.
+
+Okay spitballing:
+
+- Dependency class for each component - knows the reactive elements of the component (down to the 'next' component). This is where getters and setter are set? Sure. It also generates small bits of code that can be re-run when a specific prop updates - for example, if `greeting` updates, it knows that the element associated with it needs to have its text re-parsed. So, the Dep class, needs to have the component's prop names, their current values ?, set their gets and sets, and parse what each prop needs to do when updated - for example, change the amount of elements in a list (v-for), add or remove a class, enable or disable an attribute, or update text. Text by the way is in the form ['Hello ', props.greeting, '!']; Or whatever.
+
+Total functionality needed rn:
+
+- reactivity:
+  - need to
+
+---
+
+TODO: (Do these ONE AT A TIME).
+
+- // Remove PlatformElement
+- // Render from Component
+- Clean up this.reactive and this.props and etc, gross
+- Get everything in place as I want it, and considered (but also - consider future functionality!)
+- Update README at least somewhat
+- Get building on netlify
+- Resolve any "look this up" or "think this through" TODOs
+- Look into and create functionality for text nodes.
+- ? Implement parse-nested-component
+- ? Implement $emit
+
+- instead of updating prop value in platform element when setter, might get better results if, when change data, call render() again (from component).
+- Initial load - build getter and setter chain. Then if value is changed, you just call render on a component and all of its children. Render would parse AND create the DOM. \*\* use diff algo
+
+With Rob - get further along with Vue clone and finish presentation.
+However far with vue clone - suggests trying to get implementation as it is currently into something internally consistent and is refactored to have no extraneous pieces - have the architecture and concepts as simple as possible and still work - refactor. Finish TODOs. Zero in on fixing what's here instead of adding features.
+
+- effective whiteboarding with self - whole class of skills in software architecture - some of those skills really come from experience, some come from more general concepts and ideas. Books on software architecture and software design.
+- Devin personally: tries not to think too much in terms of the programming lang itself, try to design using things which could be implemented in one way or another independent of language.
+- The object of implementation is HOW to actually maintain those complexity-avoiding and encapsulating forms
+- think in two different ways
+
+  - functionality (like, what 'stories' can i tell with this software - like "i have to be able to update X"- as a user of my code, doing this should do this - props should update)
+  - vs structure and design - need to think "what are the modules involved" - what other modules does it know about etc.
+
+- How avoid needed an element class - it's the sort of thing that you recognize when you're implementing because the JS DOM parser happens to return an element.

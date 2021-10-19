@@ -1,4 +1,3 @@
-import PlatformElement from "./element.js";
 import simpleId from "./helpers/simpleId.js";
 
 export default class Component {
@@ -9,22 +8,13 @@ export default class Component {
     ({ name: this.name, data: this.data, template: this.template } = info);
     this.id = simpleId();
 
-    this.topElement = null; // PlatformElement of the component's first element.
+    this.topElement = null;
     this.children = []; // nested array of ids of its children (if we parsed to platformElements instead it would just be them.)
     this.reactive = {}; // not into this implementation TODO
     this.props = {};
     this.propElements = []; // key-value pairs - reactiveVar: [PlatformElement()] that use that var. Should be direct referneces to elements in this.element.
 
     this.generateReactiveData(); // TODO: Figure out why this is being called twice.
-
-    // this.element.props = Object.values(this.data).map((item) => {
-    //   return item;
-    // });
-    // console.log("this element props", this.element.props);
-  }
-
-  runLifecycle() {
-    // TODO: Not yet :)
   }
 
   generateReactiveData() {
@@ -109,115 +99,77 @@ export default class Component {
   updatePropValue(key, value, element) {
     // Only ever called in a forEach so it's only ever one prop
     console.log("info from updatePropValue: ", key, value);
-    this.props[key] = value;
+    this.reactive[key] = value;
     const updatedParsedText = this.parseText(element, [value]);
     console.log("updatedParsedText", updatedParsedText);
     console.log("rendered element", element.renderedElement);
     element.renderedElement.innerText = updatedParsedText; // TODO: Can 'cache' this search by updating the children list, replacing this id with its element
   }
 
-  parseTemplate(template, iteration = 0) {
-    // Okay so the parse chain works like this - the platform starts it by calling it on the top component,
-    // the top component goes through all its children and creates an array of PlatformElements with their
-    // domInfo (this is for rendering, later) and then a reference to the NEXT component/s it comes across.
-    // Then it calls parse on that component (components).
-    /*
-       So for example,
-       [ Div, [ P, ItemComponent ], Button, FooterComponent ]
-    */
-    // Okay sure but how is this reference used when rendering?
-    // if children,
-    // Wait what if it's just the component itself? required()
-    // And then the upper component calls parse on them, and then return their part of the array, all the way up.
-    // Ah god here we go
-
-    const domInfo = {
-      tag: "",
-      attrs: null,
-      children: [],
-      text: "",
-      rawText: "", // needs to be saved so it can be re-parsed when it changes.
-      // events: [], // going to have to capture them somehow a la @click
-      id: simpleId(),
-      nest: 0, // what iteration its on. Might be better served to pass the parent's id (remembering that components and platformElements BOTH have ids).
-    }; // define this as a const somewhere since its used here and in the element.....unless this IS the only place it needs to be defined
+  parseAndRender() {
+    // Parse this component's "block" of elements (until the next component, which has this called on it, etc.)
+    // DOMParser happens to return the full DOM element, all that we need to do it attach it.
+    // Needs to build out this.elements - a nested array of DOM elements.
+    // Return this.elements.
 
     const parser = new DOMParser();
-    const HTMLElement = parser.parseFromString(template, "text/html").body
+    const HTMLElement = parser.parseFromString(this.template, "text/html").body
       .children[0]; // TODO There's probably a better HTML API method for this
 
-    domInfo.tag = HTMLElement.tagName;
-    domInfo.nest = iteration;
     console.log(
-      "%c START PARSE NEW TEMPLATE: ",
-      "color: lime; font-size: 16",
-      domInfo.tag,
-      iteration
+      "START PARSING TEMPLATE: %c",
+      "color: blue; font-size: 16px",
+      HTMLElement.tagName
     );
-    domInfo.attrs = HTMLElement.attributes; // TODO: maybe map these for easier access
 
-    const platformElement = new PlatformElement(domInfo);
+    this.topElement = HTMLElement;
 
     // Because I'm cheating for now and wrapping all text in a tag,
     // if the HTMLElement has any children, then this is a container node
     // TODO: Might be able to capture TextNode in the future.
     if (!!HTMLElement.children.length) {
       // It's a container - no text, and it has children
-      Array.from(HTMLElement.children).forEach((domChild, index) => {
-        if (
-          document.createElement(domChild.tagName.toUpperCase()).toString() !=
-          "[object HTMLUnknownElement]" // const this TODO
-        ) {
-          // It's not a component.
-          const childPlatformElement = this.parseTemplate(
-            domChild.outerHTML,
-            iteration + 1
-          );
-          console.log(
-            "tag index, child tag: ",
-            platformElement.tag,
-            index,
-            childPlatformElement.tag
-          );
-          platformElement.children.push(childPlatformElement);
 
-          this.children.push(childPlatformElement); // TODO: Use iteration/nest number/id to nest this properly when you get to that...
-        } else {
-          // It IS a component.
-          // TODO. Eventually this will parse that component into more domInfo and call parseTemplate on it.
-          // It will also get the actual component instance (as defined in /components) so that component 'owns' itself,
-          // like the topComponent does.
-          // All we need to add to this.children here is the component.
-          // console.log("compnoent!", domChild);
+      this.children = Array.from(HTMLElement.children);
+
+      // Now remove anything after a component and call parse on that component.
+
+      Array.from(HTMLElement.children).forEach((domChild) => {
+        if (
+          document.createElement(domChild.tagName.toUpperCase()).toString() ==
+          "[object HTMLUnknownElement]" // const this TODO // OR, give data- attrs = 'platformcomponent' or watever
+        ) {
+          // Get the actual component instance (as defined in /components) so that component 'owns' itself,
+          // like the topComponent does. // TODO
+          // TODO: In the meantime, just create component and pass it what it needs...?
+          // All we need to add to this.children here is the component as a reference, but not even, because the render chain
+          // should pass right through it. Ideally we'd add component to the this.children and THEN call .render() on it.
         }
       });
     } else {
       // no chillens! It has text, then.
-
-      platformElement.rawText = HTMLElement.textContent; // need this for re-parsing, unless we save the strings/props...
-      platformElement.text = this.parseText(platformElement);
-      console.log(
-        "no chillens. tag, rawText",
-        platformElement.tag,
-        platformElement.rawText
-      );
-    }
-    //console.log("dominfo", domInfo);
-
-    // If this is the very first iteration, ie we're at the top
-    if (iteration === 0) {
-      this.topElement = platformElement;
+      // platformElement.rawText = HTMLElement.textContent; // need this for re-parsing, unless we save the strings/props...
+      //platformElement.text = this.parseText(platformElement); // Rewrite parseText - it doesn't need the whole element, it should just get strings and props.
     }
 
-    //this.element = new PlatformElement(domInfo);
-    console.log("FINISHED PARSING TEMPLATE", domInfo.tag, domInfo);
-    return platformElement;
+    console.log(
+      "FINISHED PARSING TEMPLATE",
+      HTMLElement.tagName,
+      this.children
+    );
+
+    // TODO: Dev errors all through here, so many things to go wrong
+    // TODO for attrs props events and so forth
+
+    console.log("%c START RENDER: ", "color: red; font-size: 16px", this.name);
+
+    this.children.forEach((child) => {
+      console.log("child", child);
+      this.topElement.appendChild(child);
+    });
+
+    console.log("%c END RENDER ", "color: red; font-size: 16px", this.name);
+
+    return this.topElement;
   }
-
-  // parseComponent() {
-  //   // gets top level element from component template.
-  // }
-
-  // @emit
-  // generate unique (ish) id
 }

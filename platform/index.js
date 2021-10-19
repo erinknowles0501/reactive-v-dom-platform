@@ -18,18 +18,8 @@ export default class Platform {
 
     appElement.style.border = "2px solid red";
 
-    // compile - need to get access to the #app div and go from there.
-    // actually render() might be called here and will propagate down from there.
-    // also needs an element to bind to, and a component to act as top-level.
-
-    // parse template from top to bottom here:
-    //topComponent.element = new PlatformElement(
-    //TemplateParser.parseTemplate(topComponent.rawTemplate); // this is only ever called from here so we can pass the component as the arg
-    //);
-    topComponent.parseTemplate(topComponent.template);
-
     // Here we go!!
-    appElement.appendChild(topComponent.topElement.render());
+    appElement.appendChild(topComponent.parseAndRender());
   }
   // data
   // methods:

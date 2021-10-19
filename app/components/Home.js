@@ -12,7 +12,7 @@ const Home = new Component({
       <h1>Home</h1>
       <p>{{ greeting }}! I am here!!</p>
       <button onclick="this.reactive.greeting = 'neeee'">Neeee</button>
-      <Item p-for="item in items" :text="item" />
+      <!-- <Item p-for="item in items" :text="item" /> -->
     </div>
   `,
 });
