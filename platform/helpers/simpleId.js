@@ -3,5 +3,5 @@
 // based on the current timestamp.
 
 export default function simpleId() {
-  return Number(Date.now()) * (Math.random() + 1) * 10000;
+  return String(Date.now() * Math.random()).replace(".", "");
 }

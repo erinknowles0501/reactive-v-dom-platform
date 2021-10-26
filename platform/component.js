@@ -1,52 +1,60 @@
 import simpleId from "./helpers/simpleId.js";
+import Reactable from "./reactable.js";
+import { printDevConsoleMsg } from "./helpers/devConsole.js";
 
 export default class Component {
-  constructor(info) {
-    // will need to call seal() or similar at some point. TODO
+  static INVALID_TAG_STRING = "[object HTMLUnknownElement]";
 
+  constructor(info) {
     // setting up with object instead of array - more future-proof
-    ({ name: this.name, data: this.data, template: this.template } = info);
+    ({
+      name: this.name,
+      data: this.data = {},
+      template: this.template,
+      props: this.props = [],
+      components: this.components = [],
+    } = info);
     this.id = simpleId();
 
-    this.topElement = null;
-    this.children = []; // nested array of ids of its children (if we parsed to platformElements instead it would just be them.)
-    this.reactive = {}; // not into this implementation TODO
-    this.props = {};
-    this.propElements = []; // key-value pairs - reactiveVar: [PlatformElement()] that use that var. Should be direct referneces to elements in this.element.
+    if (!this.name || !this.template) {
+      printDevConsoleMsg(`Components need at least a name and a template.`);
+    }
 
-    this.generateReactiveData(); // TODO: Figure out why this is being called twice.
+    this.topElement = null; // reference to its top-level DOM element.
+    this.children = []; // nested array of its DOM children, down to the 'next' component/s.
+
+    this.propElements = []; // key-value pairs - reactiveVar: DOMElements that use that var. Should be direct referneces to elements in this.children.
+
+    //this.generateReactiveData(); // TODO: Figure out why this is being called twice.
   }
 
   generateReactiveData() {
+    // Should only run once per component, on initialization.
     const vm = this;
 
-    console.log("am for-eaching this.data for generateReactiveData...");
-    Object.entries(vm.data).forEach(function ([key, val]) {
-      // there's a better way than forEach
-      // TODO: LOOK AT THIS TOMORROW>
+    console.log("running generateReactiveData...");
+    Object.keys(vm.data).map(function (key) {
+      const originalKey = key;
+      key = `_${key}`;
 
-      const underscoredKey = `_${key}`;
-      vm.reactive[underscoredKey] = val;
-      //vm.reactive[underscoredKey] = Symbol(); // TODO: This is supposed to create real privacy for these keys. Look into.
+      const reactable = new Reactable(vm.data[originalKey]);
+      this.reactables[originalKey] = reactable;
 
-      Object.defineProperty(vm.reactive, key, {
+      Object.defineProperty(vm.data, originalKey, {
         get() {
-          return vm.reactive[underscoredKey];
+          return vm.data[key];
         },
         set(newVal) {
-          console.log("set newval: popelements", vm.propElements);
-          if (vm.propElements[key]) {
-            console.log(
-              "have an element with this prop: ",
-              vm.propElements[key],
-              key
-            );
-            vm.updatePropValue(key, newVal, vm.propElements[key]);
-          }
-          vm.reactive[underscoredKey] = JSON.parse(JSON.stringify(newVal)); // deep clone this...? On the one hand would introduce
-          // JSON-parsing issues like number-strings being converted to numbers. On
-          // the other hand, don't save numbers as strings (and this will avoid some weird reactivity-issues).
-          // I can't remember encountering any other JSON-parsing issues. TODO: Look up whether this is even needed.
+          console.log("set newval: propelements", vm.propElements);
+          // if (vm.propElements[originalKey]) {
+          //   console.log(
+          //     "have an element with this prop: ",
+          //     vm.propElements[originalKey],
+          //     originalKey
+          //   );
+          //   vm.updatePropValue(key, newVal, vm.propElements[originalKey]);
+          // }
+          reactable.updateBy(originalKey, newVal);
           console.log("reactivated", key, newVal);
         },
       });
@@ -56,8 +64,11 @@ export default class Component {
   }
 
   parseText(platformElement, newValues = null) {
-    // parses {{ }} template and then passes it directly
-    // to a (tag, basically) function which then is re-run when those vars update.
+    // parses {{ }} template to {
+    //   strings: [ Strings ],
+    //   props: [ propKeys ]
+    // }
+    // and then ...?
 
     const rawText = platformElement.rawText;
     const elementId = platformElement.id;
@@ -96,79 +107,77 @@ export default class Component {
     return string;
   }
 
-  updatePropValue(key, value, element) {
-    // Only ever called in a forEach so it's only ever one prop
-    console.log("info from updatePropValue: ", key, value);
-    this.reactive[key] = value;
-    const updatedParsedText = this.parseText(element, [value]);
-    console.log("updatedParsedText", updatedParsedText);
-    console.log("rendered element", element.renderedElement);
-    element.renderedElement.innerText = updatedParsedText; // TODO: Can 'cache' this search by updating the children list, replacing this id with its element
-  }
+  // updatePropValue(key, newVal, element) {
+  //   // Only ever called in a forEach so it's only ever one prop
+  //   console.log("info from updatePropValue: ", key, newVal);
+  //   this.data[key] = newVal;
+  //   const updatedParsedText = this.parseText(element, [newVal]);
+  //   console.log("updatedParsedText", updatedParsedText);
+  //   console.log("rendered element", element.renderedElement);
+  //   element.renderedElement.innerText = updatedParsedText; // TODO: Can 'cache' this search by updating the children list, replacing this id with its element
+  // }
 
   parseAndRender() {
     // Parse this component's "block" of elements (until the next component, which has this called on it, etc.)
-    // DOMParser happens to return the full DOM element, all that we need to do it attach it.
-    // Needs to build out this.elements - a nested array of DOM elements.
-    // Return this.elements.
+    // DOMParser happens to return the full DOM element, all that we need to do is attach it.
+    // Needs to build out this.children - a nested array of DOM elements, minus the 'next' components.
+    // Returns this.topElement (to be appended)
 
     const parser = new DOMParser();
     const HTMLElement = parser.parseFromString(this.template, "text/html").body
-      .children[0]; // TODO There's probably a better HTML API method for this
+      .firstElementChild; // TODO when implementing text nodes: Node.firstChild
+
+    if (!HTMLElement) {
+      printDevConsoleMsg(
+        `Could not parse template to usable HTMLElement: `,
+        this.template
+      );
+    }
 
     console.log(
       "START PARSING TEMPLATE: %c",
       "color: blue; font-size: 16px",
-      HTMLElement.tagName
+      this.name
     );
 
+    HTMLElement.dataset.platformId = this.id;
+    HTMLElement.butt = true;
+    console.log(HTMLElement);
     this.topElement = HTMLElement;
 
-    // Because I'm cheating for now and wrapping all text in a tag,
-    // if the HTMLElement has any children, then this is a container node
-    // TODO: Might be able to capture TextNode in the future.
-    if (!!HTMLElement.children.length) {
-      // It's a container - no text, and it has children
-
-      this.children = Array.from(HTMLElement.children);
-
-      // Now remove anything after a component and call parse on that component.
-
-      Array.from(HTMLElement.children).forEach((domChild) => {
-        if (
-          document.createElement(domChild.tagName.toUpperCase()).toString() ==
-          "[object HTMLUnknownElement]" // const this TODO // OR, give data- attrs = 'platformcomponent' or watever
-        ) {
-          // Get the actual component instance (as defined in /components) so that component 'owns' itself,
-          // like the topComponent does. // TODO
-          // TODO: In the meantime, just create component and pass it what it needs...?
-          // All we need to add to this.children here is the component as a reference, but not even, because the render chain
-          // should pass right through it. Ideally we'd add component to the this.children and THEN call .render() on it.
-        }
-      });
-    } else {
-      // no chillens! It has text, then.
-      // platformElement.rawText = HTMLElement.textContent; // need this for re-parsing, unless we save the strings/props...
-      //platformElement.text = this.parseText(platformElement); // Rewrite parseText - it doesn't need the whole element, it should just get strings and props.
+    // We know that a component has at least one child
+    if (!HTMLElement.children.length) {
+      printDevConsoleMsg(`Component ${this.name} cannot be empty.`);
     }
 
-    console.log(
-      "FINISHED PARSING TEMPLATE",
-      HTMLElement.tagName,
-      this.children
-    );
+    this.children = Array.from(HTMLElement.children); // TODO: What refernece does this break?
 
-    // TODO: Dev errors all through here, so many things to go wrong
-    // TODO for attrs props events and so forth
+    // Replace anything beneath a component with that component
+    this.children = this.children.map((domChild) => {
+      const isComponent =
+        domChild.toString() === this.constructor.INVALID_TAG_STRING;
 
-    console.log("%c START RENDER: ", "color: red; font-size: 16px", this.name);
-
-    this.children.forEach((child) => {
-      console.log("child", child);
-      this.topElement.appendChild(child);
+      if (isComponent) {
+        domChild = this.components.find(
+          (component) =>
+            component.name.toUpperCase === domChild.tagName.toUpperCase
+        );
+        domChild = domChild.parseAndRender();
+      }
+      return domChild;
     });
 
-    console.log("%c END RENDER ", "color: red; font-size: 16px", this.name);
+    console.log("FINISHED PARSING TEMPLATE", this.name, this.children);
+
+    // TODO: build Reactable targets.
+    // Will need to parse (tag function) string,
+    // ...
+    // save type...
+    // will take form of storing what element it is (don't need to e
+
+    this.children.forEach((child) => {
+      this.topElement.appendChild(child);
+    });
 
     return this.topElement;
   }

@@ -28,13 +28,24 @@ function parseJSS(jss) {
   return cssString;
 }
 
-export function printDevConsoleMsg(error) {
-  // todo: disable if env is prod
+export function printDevConsoleMsg(errorMsg, ...rest) {
+  // TODO disable if env is prod
 
   console.log(
     `%c
 Development error: 
-${error}`,
-    parseJSS(ERROR_JSS)
+${errorMsg}`,
+    parseJSS(ERROR_JSS),
+    rest
   );
 }
+
+export function showMe(objVar, cloneValue = false) {
+  const [varName, value] = Object.entries(objVar)[0];
+
+  console.log(`${varName}: `, cloneValue ? deepClone(value) : value);
+}
+
+export function deepClone(val) {
+  return JSON.parse(JSON.stringify(val));
+} // with maybe the exception of lodash's implementation, this is the easiest, lightest, and foolest-proof way to deep clone an object.

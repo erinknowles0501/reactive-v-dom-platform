@@ -5,8 +5,8 @@ const Item = new Component({
   data: { greeting: "HELLO" },
   props: ["text"],
   template: `
-    <div style="background: grey">
-      <p>{{ text }}
+    <div style="background: skyblue">
+      <p>{{ text }} ALSO HI I'M AN ITEM</p>
     </div>
   `,
 });
