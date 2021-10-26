@@ -24,8 +24,7 @@ export default class Component {
     this.topElement = null; // reference to its top-level DOM element.
     this.children = []; // nested array of its DOM children, down to the 'next' component/s.
 
-    this.propElements = []; // key-value pairs - reactiveVar: DOMElements that use that var. Should be direct referneces to elements in this.children.
-
+    this.reactables = {}; // store of all reactables used within the direct children of this component. { propName: Reactable }
     //this.generateReactiveData(); // TODO: Figure out why this is being called twice.
   }
 
@@ -46,30 +45,15 @@ export default class Component {
           return vm.data[key];
         },
         set(newVal) {
-          console.log("set newval: propelements", vm.propElements);
-          // if (vm.propElements[originalKey]) {
-          //   console.log(
-          //     "have an element with this prop: ",
-          //     vm.propElements[originalKey],
-          //     originalKey
-          //   );
-          //   vm.updatePropValue(key, newVal, vm.propElements[originalKey]);
-          // }
           reactable.updateBy(originalKey, newVal);
           console.log("reactivated", key, newVal);
         },
       });
-
-      // console.log("this after reactive generation: ", vm);
     });
   }
 
   parseText(platformElement, newValues = null) {
-    // parses {{ }} template to {
-    //   strings: [ Strings ],
-    //   props: [ propKeys ]
-    // }
-    // and then ...?
+    // parses {{ }} template and returns strings and props in form ready for a tag function.
 
     const rawText = platformElement.rawText;
     const elementId = platformElement.id;
@@ -91,7 +75,7 @@ export default class Component {
       });
     }
 
-    // TODO......
+    // TODO......this part
     let string = "";
     strings.forEach((str, index) => {
       string += str;
@@ -107,16 +91,6 @@ export default class Component {
 
     return string;
   }
-
-  // updatePropValue(key, newVal, element) {
-  //   // Only ever called in a forEach so it's only ever one prop
-  //   console.log("info from updatePropValue: ", key, newVal);
-  //   this.data[key] = newVal;
-  //   const updatedParsedText = this.parseText(element, [newVal]);
-  //   console.log("updatedParsedText", updatedParsedText);
-  //   console.log("rendered element", element.renderedElement);
-  //   element.renderedElement.innerText = updatedParsedText; // TODO: Can 'cache' this search by updating the children list, replacing this id with its element
-  // }
 
   generateTargetFunctions(element) {
     // If an element is dynamic (ie might change due to a prop's value) we need to generate functions to run
@@ -166,6 +140,8 @@ export default class Component {
     // Replace anything beneath a component with that component
     // Also flag any dynamic elements to generate target functions from
     this.children = this.children.map((domChild) => {
+      // TODO: I don't like this part being here. It doesn't belong in the rendering forEach,
+      // But I don't like this part being part of a map.
       const isDynamic =
         domChild.getAttributeNames().some((attr) => {
           return this.constructor.PLATFORM_ATTRIBUTES.includes(attr);
@@ -187,12 +163,6 @@ export default class Component {
     });
 
     console.log("FINISHED PARSING TEMPLATE", this.name, this.children);
-
-    // TODO: build Reactable targets.
-    // Will need to parse (tag function) string,
-    // ...
-    // save type...
-    // will take form of storing what element it is (don't need to e
 
     this.children.forEach((child) => {
       this.topElement.appendChild(child);

@@ -9,6 +9,6 @@ export default class Reactable {
   }
 
   update() {
-    this.subs.forEach((watcher) => watcher());
+    this.subs.forEach((target) => target());
   }
 }
