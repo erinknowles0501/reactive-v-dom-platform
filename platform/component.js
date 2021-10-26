@@ -4,6 +4,7 @@ import { printDevConsoleMsg } from "./helpers/devConsole.js";
 
 export default class Component {
   static INVALID_TAG_STRING = "[object HTMLUnknownElement]";
+  static PLATFORM_ATTRIBUTES = ["p-for", "p-if"]; // p-bind, p-key...
 
   constructor(info) {
     // setting up with object instead of array - more future-proof
@@ -117,10 +118,20 @@ export default class Component {
   //   element.renderedElement.innerText = updatedParsedText; // TODO: Can 'cache' this search by updating the children list, replacing this id with its element
   // }
 
+  generateTargetFunctions(element) {
+    // If an element is dynamic (ie might change due to a prop's value) we need to generate functions to run
+    // when that prop updates, to specifically update that element. (Element = the target)
+    // We can assume any element passed here is dynamic.
+    // 1. Get the dynamic part/s of the element - the p-for, the p-if, the {{ }} string, etc.
+    // 2. Set the target function/s type based on that
+    // 3. Generate the function based on the type
+    // 3. Register the function/s with the appropriate Reactable/s
+  }
+
   parseAndRender() {
     // Parse this component's "block" of elements (until the next component, which has this called on it, etc.)
     // DOMParser happens to return the full DOM element, all that we need to do is attach it.
-    // Needs to build out this.children - a nested array of DOM elements, minus the 'next' components.
+    // Needs to build out this.children - a nested array of DOM elements
     // Returns this.topElement (to be appended)
 
     const parser = new DOMParser();
@@ -153,7 +164,14 @@ export default class Component {
     this.children = Array.from(HTMLElement.children); // TODO: What refernece does this break?
 
     // Replace anything beneath a component with that component
+    // Also flag any dynamic elements to generate target functions from
     this.children = this.children.map((domChild) => {
+      const isDynamic =
+        domChild.getAttributeNames().some((attr) => {
+          return this.constructor.PLATFORM_ATTRIBUTES.includes(attr);
+        }) || !!domChild.innerText.match(/{{.*?}}/gi);
+      console.log("is dynamic?", isDynamic);
+
       const isComponent =
         domChild.toString() === this.constructor.INVALID_TAG_STRING;
 
@@ -164,6 +182,7 @@ export default class Component {
         );
         domChild = domChild.parseAndRender();
       }
+
       return domChild;
     });
 
