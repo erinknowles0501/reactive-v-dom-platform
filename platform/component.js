@@ -139,14 +139,16 @@ export default class Component {
 
     // Replace anything beneath a component with that component
     // Also flag any dynamic elements to generate target functions from
-    this.children = this.children.map((domChild) => {
-      // TODO: I don't like this part being here. It doesn't belong in the rendering forEach,
-      // But I don't like this part being part of a map.
+    this.children.forEach((domChild, index) => {
       const isDynamic =
         domChild.getAttributeNames().some((attr) => {
           return this.constructor.PLATFORM_ATTRIBUTES.includes(attr);
         }) || !!domChild.innerText.match(/{{.*?}}/gi);
       console.log("is dynamic?", isDynamic);
+
+      if (isDynamic) {
+        this.generateTargetFunctions(domChild);
+      }
 
       const isComponent =
         domChild.toString() === this.constructor.INVALID_TAG_STRING;
@@ -159,7 +161,7 @@ export default class Component {
         domChild = domChild.parseAndRender();
       }
 
-      return domChild;
+      this.children[index] = domChild;
     });
 
     console.log("FINISHED PARSING TEMPLATE", this.name, this.children);
